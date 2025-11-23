@@ -1,0 +1,7 @@
+node_modules
+main.js
+*.js.map
+coverage
+.github
+esbuild.config.mjs
+jest.config.js

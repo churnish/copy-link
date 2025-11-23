@@ -8,3 +8,20 @@ main.js
 
 # obsidian
 data.json
+
+# testing
+coverage
+*.test.js
+.jest-cache
+junit.xml
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

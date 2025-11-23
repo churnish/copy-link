@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Menu, MenuItem, Notice, Plugin, PluginSettingTab, Setting, TFile } from 'obsidian';
+import { App, Editor, MarkdownView, MenuItem, Notice, Plugin, PluginSettingTab, Setting, TFile } from 'obsidian';
 
 interface CopyLinkSettings {
 	// File commands
@@ -28,7 +28,7 @@ export default class CopyLinkPlugin extends Plugin {
 		// Register file context menu
 		this.registerEvent(
 			this.app.workspace.on("file-menu", (menu, file) => {
-				if (!(file instanceof TFile) || file.extension !== 'md') return;
+				if (!(file instanceof TFile) || file.extension !== 'md') {return;}
 
 				if (this.settings.enableCopyNoteLink) {
 					menu.addItem((item: MenuItem) => {
@@ -54,7 +54,7 @@ export default class CopyLinkPlugin extends Plugin {
 		this.registerEvent(
 			this.app.workspace.on("editor-menu", (menu, editor, view) => {
 				// Only show commands if view is a MarkdownView
-				if (!(view instanceof MarkdownView)) return;
+				if (!(view instanceof MarkdownView)) {return;}
 
 				if (this.settings.enableCopyBlockLink) {
 					menu.addItem((item: MenuItem) => {
@@ -160,12 +160,12 @@ export default class CopyLinkPlugin extends Plugin {
 			const lastParts = optionParts.length;
 
 			for (const otherFile of allFiles) {
-				if (otherFile.path === fullPath) continue;
+				if (otherFile.path === fullPath) {continue;}
 
 				const filePath = otherFile.path.replace(/\.[^/.]+$/, "");
 				const filePathParts = filePath.split('/');
 
-				if (filePathParts.length < lastParts) continue;
+				if (filePathParts.length < lastParts) {continue;}
 
 				const fileLastParts = filePathParts.slice(filePathParts.length - lastParts).join('/');
 				if (fileLastParts === pathOption) {
@@ -232,9 +232,9 @@ export default class CopyLinkPlugin extends Plugin {
 	// Check if line should have block ID inserted after
 	shouldInsertAfter(line: string): boolean {
 		return line.trim().startsWith('>') || // blockquote
-			   line.trim().startsWith('```') || // code block
-			   line.trim().startsWith('|') || // table
-			   line.trim().match(/^#{1,6}\s/) !== null; // heading
+			line.trim().startsWith('```') || // code block
+			line.trim().startsWith('|') || // table
+			line.trim().match(/^#{1,6}\s/) !== null; // heading
 	}
 
 	// Find existing block ID on or after the cursor line
@@ -289,7 +289,7 @@ export default class CopyLinkPlugin extends Plugin {
 
 	async copyBlockLink(editor: Editor, view: MarkdownView) {
 		const file = view.file;
-		if (!file) return;
+		if (!file) {return;}
 
 		const blockId = await this.addOrGetBlockId(editor);
 		if (!blockId) {
@@ -307,7 +307,7 @@ export default class CopyLinkPlugin extends Plugin {
 
 	async copyBlockEmbed(editor: Editor, view: MarkdownView) {
 		const file = view.file;
-		if (!file) return;
+		if (!file) {return;}
 
 		const blockId = await this.addOrGetBlockId(editor);
 		if (!blockId) {

@@ -1,0 +1,147 @@
+name: Nightly Comprehensive Tests
+
+on:
+  schedule:
+    # Run every night at 3 AM UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  extended-matrix-test:
+    name: Extended Test Matrix (Node ${{ matrix.node-version }}, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node-version: ['16.x', '16.20', '18.x', '18.19', '20.x', '20.10', '21.x']
+        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-latest, windows-2019, windows-2022, windows-latest, macos-12, macos-13, macos-latest]
+      fail-fast: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run all tests
+        run: npm run test:ci
+        timeout-minutes: 10
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-test-${{ matrix.os }}-node${{ matrix.node-version }}
+          path: coverage/
+          retention-days: 7
+
+  stress-test:
+    name: Stress Testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests multiple times
+        run: |
+          for i in {1..10}; do
+            echo "Test iteration $i"
+            npm run test:ci
+          done
+
+      - name: Check for flaky tests
+        run: echo "✅ All test iterations passed"
+
+  memory-leak-test:
+    name: Memory Leak Detection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with memory profiling
+        run: node --expose-gc ./node_modules/.bin/jest --coverage --logHeapUsage
+
+  compatibility-test:
+    name: Obsidian API Compatibility
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test with latest Obsidian API
+        run: |
+          npm install obsidian@latest
+          npm run test:ci
+
+      - name: Type check with latest API
+        run: npm run type-check
+
+  performance-benchmark:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run performance tests
+        run: npm run test:ci -- --silent
+
+      - name: Benchmark report
+        run: |
+          echo "## Performance Benchmark Results" >> $GITHUB_STEP_SUMMARY
+          echo "Date: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Tests completed successfully" >> $GITHUB_STEP_SUMMARY
+
+  notify-on-failure:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [extended-matrix-test, stress-test, memory-leak-test, compatibility-test, performance-benchmark]
+    if: failure()
+    steps:
+      - name: Create issue on failure
+        run: |
+          echo "Nightly tests failed. Check the workflow run for details."
+          echo "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"

@@ -1,0 +1,179 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 4 * * 1' # Weekly on Monday at 4 AM
+  workflow_dispatch:
+
+jobs:
+  sonarcloud:
+    name: SonarCloud Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage
+        run: npm run test:ci
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        continue-on-error: true
+
+  code-metrics:
+    name: Code Metrics
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Count lines of code
+        run: |
+          echo "## Code Metrics" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### TypeScript Files" >> $GITHUB_STEP_SUMMARY
+
+          total_lines=$(find . -name "*.ts" -not -path "*/node_modules/*" -not -path "*/tests/*" | xargs wc -l | tail -1 | awk '{print $1}')
+          test_lines=$(find ./tests -name "*.ts" 2>/dev/null | xargs wc -l 2>/dev/null | tail -1 | awk '{print $1}' || echo "0")
+
+          echo "- Production code: $total_lines lines" >> $GITHUB_STEP_SUMMARY
+          echo "- Test code: $test_lines lines" >> $GITHUB_STEP_SUMMARY
+
+          if [ "$test_lines" != "0" ]; then
+            ratio=$(awk "BEGIN {printf \"%.2f\", $test_lines/$total_lines}")
+            echo "- Test/Code ratio: $ratio" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Complexity analysis
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### File Statistics" >> $GITHUB_STEP_SUMMARY
+
+          file_count=$(find . -name "*.ts" -not -path "*/node_modules/*" | wc -l)
+          echo "- Total TypeScript files: $file_count" >> $GITHUB_STEP_SUMMARY
+
+          largest_file=$(find . -name "*.ts" -not -path "*/node_modules/*" -exec wc -l {} \; | sort -rn | head -1)
+          echo "- Largest file: $largest_file lines" >> $GITHUB_STEP_SUMMARY
+
+  duplicate-code-detection:
+    name: Duplicate Code Detection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install jscpd
+        run: npm install -g jscpd
+
+      - name: Run duplicate detection
+        run: |
+          jscpd . --pattern "**/*.ts" --ignore "node_modules/**,tests/**" --min-lines 5 --min-tokens 50 --reporters "console" || true
+
+  technical-debt:
+    name: Technical Debt Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Find TODO/FIXME/HACK comments
+        run: |
+          echo "## Technical Debt" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          todos=$(grep -r "TODO" --include="*.ts" . 2>/dev/null | wc -l || echo "0")
+          fixmes=$(grep -r "FIXME" --include="*.ts" . 2>/dev/null | wc -l || echo "0")
+          hacks=$(grep -r "HACK" --include="*.ts" . 2>/dev/null | wc -l || echo "0")
+
+          echo "- TODO comments: $todos" >> $GITHUB_STEP_SUMMARY
+          echo "- FIXME comments: $fixmes" >> $GITHUB_STEP_SUMMARY
+          echo "- HACK comments: $hacks" >> $GITHUB_STEP_SUMMARY
+
+  documentation-coverage:
+    name: Documentation Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check documentation
+        run: |
+          echo "## Documentation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          has_readme=$([[ -f README.md ]] && echo "✅" || echo "❌")
+          has_license=$([[ -f LICENSE ]] && echo "✅" || echo "❌")
+          has_contributing=$([[ -f CONTRIBUTING.md ]] && echo "✅" || echo "❌")
+          has_changelog=$([[ -f CHANGELOG.md ]] && echo "✅" || echo "❌")
+
+          echo "- README.md: $has_readme" >> $GITHUB_STEP_SUMMARY
+          echo "- LICENSE: $has_license" >> $GITHUB_STEP_SUMMARY
+          echo "- CONTRIBUTING.md: $has_contributing" >> $GITHUB_STEP_SUMMARY
+          echo "- CHANGELOG.md: $has_changelog" >> $GITHUB_STEP_SUMMARY
+
+  bundle-analysis:
+    name: Bundle Size Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and analyze
+        run: |
+          npm run build
+
+          echo "## Bundle Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f main.js ]; then
+            size=$(stat -c%s main.js 2>/dev/null || stat -f%z main.js)
+            size_kb=$((size / 1024))
+            echo "- Bundle size: ${size_kb}KB (${size} bytes)" >> $GITHUB_STEP_SUMMARY
+
+            # Check if gzip is available
+            if command -v gzip &> /dev/null; then
+              gzip -c main.js > main.js.gz
+              gzip_size=$(stat -c%s main.js.gz 2>/dev/null || stat -f%z main.js.gz)
+              gzip_size_kb=$((gzip_size / 1024))
+              echo "- Gzipped size: ${gzip_size_kb}KB (${gzip_size} bytes)" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi

@@ -1,0 +1,200 @@
+name: Performance Monitoring
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 6 * * *' # Daily at 6 AM
+  workflow_dispatch:
+
+jobs:
+  benchmark:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run performance tests
+        run: |
+          echo "## Performance Benchmarks" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Test Execution Time" >> $GITHUB_STEP_SUMMARY
+
+          start_time=$(date +%s%N)
+          npm run test:ci
+          end_time=$(date +%s%N)
+
+          duration=$((($end_time - $start_time) / 1000000))
+          echo "- Total test duration: ${duration}ms" >> $GITHUB_STEP_SUMMARY
+
+      - name: Build performance
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Build Performance" >> $GITHUB_STEP_SUMMARY
+
+          start_time=$(date +%s%N)
+          npm run build
+          end_time=$(date +%s%N)
+
+          duration=$((($end_time - $start_time) / 1000000))
+          echo "- Build duration: ${duration}ms" >> $GITHUB_STEP_SUMMARY
+
+      - name: Memory usage analysis
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Memory Usage" >> $GITHUB_STEP_SUMMARY
+
+          node --expose-gc -e "
+            const before = process.memoryUsage();
+            console.log('Initial memory:', Math.round(before.heapUsed / 1024 / 1024) + 'MB');
+
+            // Simulate plugin loading
+            const plugin = require('./main.js');
+
+            global.gc();
+            const after = process.memoryUsage();
+            console.log('After load:', Math.round(after.heapUsed / 1024 / 1024) + 'MB');
+            console.log('Delta:', Math.round((after.heapUsed - before.heapUsed) / 1024 / 1024) + 'MB');
+          " 2>&1 | tee -a $GITHUB_STEP_SUMMARY || echo "Memory analysis skipped" >> $GITHUB_STEP_SUMMARY
+
+  load-test:
+    name: Load Testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Stress test
+        run: |
+          echo "## Load Testing Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          for i in {1..5}; do
+            start=$(date +%s%N)
+            npm run test:ci > /dev/null 2>&1
+            end=$(date +%s%N)
+            duration=$((($end - $start) / 1000000))
+            echo "- Run $i: ${duration}ms" >> $GITHUB_STEP_SUMMARY
+          done
+
+  startup-time:
+    name: Plugin Startup Time
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build plugin
+        run: npm run build
+
+      - name: Measure startup time
+        run: |
+          echo "## Plugin Startup Metrics" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Measure multiple startups
+          for i in {1..10}; do
+            start=$(date +%s%N)
+            node -e "require('./main.js')" 2>/dev/null || true
+            end=$(date +%s%N)
+            duration=$((($end - $start) / 1000000))
+            echo "Startup $i: ${duration}ms"
+          done | tee startup_times.txt
+
+          avg=$(awk '{sum+=$3; gsub(/ms/, "", $3)} END {print sum/NR}' startup_times.txt)
+          echo "- Average startup time: ${avg}ms" >> $GITHUB_STEP_SUMMARY
+
+  regression-check:
+    name: Performance Regression Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout base branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.base_ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies (base)
+        run: npm ci
+
+      - name: Benchmark base
+        run: |
+          start=$(date +%s%N)
+          npm run test:ci > /dev/null 2>&1
+          end=$(date +%s%N)
+          base_duration=$((($end - $start) / 1000000))
+          echo "BASE_DURATION=$base_duration" >> $GITHUB_ENV
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (PR)
+        run: npm ci
+
+      - name: Benchmark PR
+        run: |
+          start=$(date +%s%N)
+          npm run test:ci > /dev/null 2>&1
+          end=$(date +%s%N)
+          pr_duration=$((($end - $start) / 1000000))
+          echo "PR_DURATION=$pr_duration" >> $GITHUB_ENV
+
+      - name: Compare performance
+        run: |
+          base=${{ env.BASE_DURATION }}
+          pr=${{ env.PR_DURATION }}
+
+          echo "## Performance Comparison" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Base: ${base}ms" >> $GITHUB_STEP_SUMMARY
+          echo "- PR: ${pr}ms" >> $GITHUB_STEP_SUMMARY
+
+          diff=$((pr - base))
+          if [ $diff -gt 0 ]; then
+            pct=$(awk "BEGIN {printf \"%.1f\", ($diff / $base) * 100}")
+            echo "- Change: +${diff}ms (+${pct}%)" >> $GITHUB_STEP_SUMMARY
+            if [ $diff -gt $((base / 5)) ]; then
+              echo "⚠️ **Warning**: Performance regression detected (>20%)" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            diff=${diff#-}
+            pct=$(awk "BEGIN {printf \"%.1f\", ($diff / $base) * 100}")
+            echo "- Change: -${diff}ms (-${pct}%)" >> $GITHUB_STEP_SUMMARY
+            echo "✅ Performance improved!" >> $GITHUB_STEP_SUMMARY
+          fi
