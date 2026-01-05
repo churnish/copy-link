@@ -2,7 +2,7 @@
 
 Add commands to quickly copy links to files, headings and blocks.
 
-## ⚡ Features
+## Key features
 
 ### File Commands
 
@@ -18,7 +18,7 @@ Available in the editor context menu (right-click in editor):
 - **Copy block link** - Automatically adds or finds a block ID and copies a link to it: `[[note#^blockid]]`
 - **Copy block embed** - Same as block link but prefixed with `!` for embedding: `![[note#^blockid]]`
 
-## ✅ Installation
+## Install
 
 > [!IMPORTANT]  
 > The plugin is in active development — things can break, or change drastically between releases.
@@ -46,6 +46,6 @@ Note: to get updates for _Copy Link_, you will have to check for and install the
 3. Reload plugins or app.
 4. Enable _Copy Link_ in Obsidian settings > Community plugins > Installed plugins.
 
-## 🙏 Thanks
+## Thanks
 
 This plugin builds on [Copy Block Link](https://github.com/mgmeyers/obsidian-copy-block-link) and employs some of its code.
