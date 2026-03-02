@@ -10,13 +10,18 @@ Available in the file context menu (right-click on files):
 
 - **Copy note link** - Copies a wikilink to the note using the shortest unique path
 - **Copy note link as footnote** - Copies the note link wrapped in an inline footnote: `^[[[link]]]`
+- **Copy note embed** - Copies an embed link to the note: `![[link]]`
 
 ### Block Commands
 
 Available in the editor context menu (right-click in editor):
 
-- **Copy block link** - Automatically adds or finds a block ID and copies a link to it: `[[note#^blockid]]`
-- **Copy block embed** - Same as block link but prefixed with `!` for embedding: `![[note#^blockid]]`
+- **Copy block link** - Automatically adds or finds a block ID and copies a link to it: `[[note#^blockid]]`, works with multi-block selections (creates multiple links on separate lines)
+- **Copy block embed** - Same as block link but prefixed with `!` for embedding: `![[note#^blockid]]`, works with multi-block selections (creates multiple embeds on separate lines)
+- **Copy block link as footnote** - Same as block link but wrapped in footnote syntax: `^[[[note#^blockid]]]`, works with multi-block selections (creates multiple footnotes on separate lines)
+- **Copy anchor link** - Copies just the block anchor without the file path: `[[#^blockid]]`, works with multi-block selections (creates multiple anchors on separate lines)
+- **Copy block URL** - Creates an obsidian://open URL for the block: `obsidian://open?vault=...&file=...%23%5Eblockid`, works with multi-block selections (creates multiple URLs on separate lines)
+- **Copy block link with selection as caption** - Creates a block link using the selected text as the caption: `[[note#^blockid|selected text]]`
 
 ## Install
 
@@ -25,7 +30,28 @@ Available in the editor context menu (right-click in editor):
 >
 > **Ensure your files are regularly [backed up](https://help.obsidian.md/backup).**
 
-Untill _Copy Link_ is [made availiable](https://github.com/obsidianmd/obsidian-releases/pull/8068) in the plugin directory, follow the steps below to install it.
+### File Commands
+
+- **Copy note link** - Enable/disable "Copy note link" in file context menu
+- **Copy note link as footnote** - Enable/disable "Copy note link as footnote" in file context menu
+- **Copy note embed** - Enable/disable "Copy note embed" in file context menu
+
+### Block Commands
+
+- **Copy block link** - Enable/disable "Copy block link" in editor context menu
+- **Copy block embed** - Enable/disable "Copy block embed" in editor context menu
+- **Copy block link as footnote** - Enable/disable "Copy block link as footnote" in editor context menu
+- **Copy anchor link** - Enable/disable "Copy anchor link" in editor context menu
+- **Copy block URL** - Enable/disable "Copy block URL" in editor context menu
+- **Copy block link with selection as caption** - Enable/disable "Copy block link with selection as caption" in editor context menu
+
+### Heading behavior
+
+- **Use block IDs for headings** - When enabled, heading blocks are treated like other blocks and get assigned block IDs (^xyz format). When disabled, headings use standard heading references (#heading-name format).
+
+### Notifications
+
+- **Show notifications** - Toggle clipboard notifications on/off
 
 ### BRAT (recommended)
 

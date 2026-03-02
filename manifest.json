@@ -1,10 +1,10 @@
 {
-	"id": "copy-link",
-	"name": "Copy Link",
-	"version": "0.1.0",
-	"minAppVersion": "0.15.0",
-	"description": "Add commands to copy link to file, heading or block.",
-	"author": "greetclammy",
-	"authorUrl": "",
-	"isDesktopOnly": false
+  "id": "copy-link",
+  "name": "Copy Link",
+  "version": "0.1.0",
+  "minAppVersion": "0.15.0",
+  "description": "Add commands to copy link to file, heading or block.",
+  "author": "greetclammy",
+  "authorUrl": "",
+  "isDesktopOnly": false
 }

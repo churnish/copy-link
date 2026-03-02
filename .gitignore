@@ -1,10 +1,9 @@
-# npm
-node_modules
-package-lock.json
+node_modules/
+node_modules.nosync/
 
-# build
-main.js
 *.js.map
 
-# obsidian
+.DS_Store
 data.json
+main.js
+package-lock.json
