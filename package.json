@@ -5,9 +5,12 @@
   "main": "main.js",
   "scripts": {
     "dev": "node esbuild.config.mjs",
-    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+    "build": "node esbuild.config.mjs production",
     "css": "true",
-    "knip": "knip"
+    "knip": "knip",
+    "preversion": "node version-bump.mjs --preflight",
+    "version": "node version-bump.mjs",
+    "postversion": "git push origin main --follow-tags --force-with-lease"
   },
   "knip": {
     "entry": [
