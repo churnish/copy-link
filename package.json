@@ -24,7 +24,7 @@
     "ignoreExportsUsedInFile": true
   },
   "keywords": [],
-  "author": "greetclammy",
+  "author": "churnish",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^24.10.1",
