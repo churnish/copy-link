@@ -1,4 +1,4 @@
-# AGENTS.md
+# copy-link
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -10,7 +10,6 @@ Obsidian community plugin (`copy-link`) that adds context menu commands for copy
 
 - **`npm run build`** — type-check with `tsc -noEmit`, then bundle for production.
 - **`npm run dev`** — start esbuild in watch mode with inline sourcemaps.
-- **No test or lint commands** — ESLint packages are installed but no config exists.
 
 ## Architecture
 
