@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/username/Library/Mobile Documents/iCloud~md~obsidian/Documents/Vault/一Utility/Templates/**)",
+      "Read(//Users/username/Library/Mobile Documents/iCloud~md~obsidian/Documents/Dev/.obsidian/plugins/first-line-is-title/**)",
+      "Read(//Users/username/Library/Mobile Documents/com~apple~CloudDocs/Obsidian Stuff/obsidianmd repositories/**)",
+      "Bash(git clone:*)",
+      "Bash(npm install)",
+      "Bash(npm run build:*)",
+      "Bash(git init:*)",
+      "Bash(git remote add:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(git log:*)",
+      "Bash(git config:*)",
+      "Bash(git filter-branch:*)",
+      "Bash(git reflog:*)",
+      "Bash(git gc:*)",
+      "WebFetch(domain:github.com)",
+      "WebSearch",
+      "WebFetch(domain:forum.obsidian.md)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Read(//private/tmp/obsidian42-text-transporter/**)",
+      "Read(//tmp/obsidian42-text-transporter/**)",
+      "Read(//private/tmp/block-link-plus/src/**)",
+      "Read(//tmp/block-link-plus/src/basics/enactor/**)",
+      "Read(//tmp/block-link-plus/src/**)",
+      "Bash(git count-objects:*)",
+      "Bash(do echo:*)",
+      "Bash(git -C \"$DEST/$name\" gc --aggressive --prune=now)",
+      "Bash(git -C \"$DEST/$name\" count-objects -vH)",
+      "Bash(~/.gitignore:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

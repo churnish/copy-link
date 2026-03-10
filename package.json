@@ -19,14 +19,22 @@
     "project": [
       "**/*.ts"
     ],
-    "ignoreDependencies": ["@typescript-eslint/eslint-plugin", "@typescript-eslint/parser", "prettier"],
-    "ignoreBinaries": ["tsc", "knip"],
+    "ignoreDependencies": [
+      "@typescript-eslint/eslint-plugin",
+      "@typescript-eslint/parser",
+      "prettier"
+    ],
+    "ignoreBinaries": [
+      "tsc",
+      "knip"
+    ],
     "ignoreExportsUsedInFile": true
   },
   "keywords": [],
   "author": "churnish",
   "license": "MIT",
   "devDependencies": {
+    "@eslint-community/eslint-plugin-eslint-comments": "^4.7.1",
     "@types/node": "^24.10.1",
     "@typescript-eslint/eslint-plugin": "^8.52.0",
     "@typescript-eslint/parser": "^8.52.0",
