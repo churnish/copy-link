@@ -36,6 +36,8 @@ Until _Copy Link_ is [made available](https://github.com/obsidianmd/obsidian-rel
 
 <details><summary>Install manually</summary>
 
+Note: To get updates for *Copy Link*, you will have to check for and install them manually.
+
 1. Download `copy-link.zip` in the `Assets` of the [latest release](https://github.com/churnish/copy-link/releases).
 2. Open the vault folder in the system file manager.
 3. Open your Obsidian configuration folder (`.obsidian` by default, hidden on most OSes).
