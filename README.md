@@ -25,25 +25,22 @@ Available in the editor context menu (right-click in editor):
 
 ## Installation
 
-Until _Copy Link_ is [made available](https://github.com/obsidianmd/obsidian-releases/pull/8068) in the plugin directory, follow the steps below to install it:
+Until _Copy Link_ is [made available](https://github.com/obsidianmd/obsidian-releases/pull/8068) in the plugin directory, to install it:
 
-1. Download and enable the [BRAT](https://obsidian.md/plugins?id=obsidian42-brat) plugin.
-2. Run _Add a beta plugin for testing_ in the Command palette.
-3. Paste https://github.com/churnish/copy-link.
-4. Select _Latest version_.
-5. Check _Enable after installing the plugin_.
-6. Press _Add Plugin_.
+1. Download and enable the [BRAT](https://churnish.github.io/http-protocol-redirector?r=obsidian://show-plugin?id=obsidian42-brat) plugin.
+2. [Install via BRAT](https://churnish.github.io/http-protocol-redirector?r=obsidian://brat?plugin=churnish/copy-link).
+3. Select **Add plugin**.
 
 <details><summary>Install manually</summary>
 
-Note: To get updates for *Copy Link*, you will have to check for and install them manually.
+Note: To get updates for _Copy Link_, you will have to check for and install them manually.
 
 1. Download `copy-link.zip` in the `Assets` of the [latest release](https://github.com/churnish/copy-link/releases).
 2. Open the vault folder in the system file manager.
 3. Open your Obsidian configuration folder (`.obsidian` by default, hidden on most OSes).
 4. Unzip `copy-link.zip` and place it in the `plugins` folder.
 5. Reload plugins or app.
-6. Enable _Copy Link_ in Obsidian settings > Community plugins > Installed plugins.
+6. Enable _Copy Link_ in Obsidian settings → Community plugins → Installed plugins.
 
 </details>
 
