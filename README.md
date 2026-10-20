@@ -1,5 +1,3 @@
-# Copy Link
-
 Add commands to quickly copy links to files, headings and blocks.
 
 ## Features
