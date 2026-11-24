@@ -1,7 +1,7 @@
 name: Bug report
 description: Report something that is not working as expected in the Copy Link plugin
+type: Bug
 labels:
-  - Bug report
   - '⚪️ Pending'
 body:
   - type: markdown
